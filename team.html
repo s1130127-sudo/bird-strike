@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>團隊介紹 · 城市飛羽</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style id="sharedStyle"></style>
+  <style>
+    .team-hero { background: linear-gradient(160deg, var(--night) 0%, var(--dusk) 55%, #3a6b8a 100%); padding: 7rem 2rem 4rem; text-align: center; position: relative; overflow: hidden; }
+    .team-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(240,160,90,0.1) 0%, transparent 60%); }
+    .team-hero-icon { font-size: 3.5rem; margin-bottom: 1rem; position: relative; animation: float 4s ease-in-out infinite; }
+    @keyframes float { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-12px); } }
+    .team-hero h1 { font-family: 'Noto Serif TC', serif; font-size: clamp(1.8rem,5vw,3rem); font-weight: 700; color: #fff; margin-bottom: 1rem; position: relative; }
+    .team-hero h1 em { color: var(--dawn); font-style: normal; }
+    .team-hero p { font-size: 0.97rem; color: rgba(255,255,255,0.7); max-width: 560px; margin: 0 auto; line-height: 1.9; position: relative; }
+    .team-hero-badge { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; margin-top: 1rem; position: relative; }
+    .team-intro { background: #fff; border-radius: 20px; padding: 2.5rem; margin-bottom: 3rem; border: 1px solid rgba(44,74,110,0.08); box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
+    .team-intro p { font-size: 0.95rem; color: #555; line-height: 2; }
+    .team-intro p + p { margin-top: 1rem; }
+    .members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.75rem; margin-bottom: 3rem; }
+    .member-card { background: #fff; border-radius: 20px; border: 1px solid rgba(44,74,110,0.08); box-shadow: 0 2px 16px rgba(0,0,0,0.05); overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; display: flex; flex-direction: column; align-items: center; padding: 2rem 1.5rem 1.75rem; text-align: center; }
+    .member-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(44,74,110,0.12); }
+    .member-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #daeaf5, #c5e8d5); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1.25rem; box-shadow: 0 4px 16px rgba(44,74,110,0.1); border: 3px solid rgba(255,255,255,0.9); outline: 3px solid rgba(138,180,196,0.3); }
+    .member-role { font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; color: var(--mist); text-transform: uppercase; margin-bottom: 0.35rem; background: #eef5f9; padding: 0.2rem 0.7rem; border-radius: 20px; }
+    .member-name { font-family: 'Noto Serif TC', serif; font-size: 1.2rem; font-weight: 700; color: var(--dusk); margin: 0.5rem 0 0.75rem; }
+    .member-bio { font-size: 0.84rem; color: #777; line-height: 1.8; }
+    .contact-section { background: var(--dusk); border-radius: 20px; padding: 3rem; text-align: center; margin-bottom: 3rem; }
+    .contact-section h2 { font-family: 'Noto Serif TC', serif; font-size: 1.5rem; color: #fff; margin-bottom: 0.75rem; }
+    .contact-section p { font-size: 0.9rem; color: rgba(255,255,255,0.65); margin-bottom: 2rem; line-height: 1.8; }
+    .contact-links { display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; }
+    .contact-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.75rem; border-radius: 50px; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: all 0.25s; font-family: 'Noto Sans TC', sans-serif; }
+    .contact-btn-email { background: var(--dawn); color: var(--night); }
+    .contact-btn-email:hover { background: #e8924a; transform: translateY(-2px); }
+    .contact-btn-fb { background: #1877f2; color: #fff; }
+    .contact-btn-fb:hover { background: #1464d0; transform: translateY(-2px); }
+    .contact-btn-ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
+    .contact-btn-ig:hover { opacity: 0.9; transform: translateY(-2px); }
+    @media (max-width: 640px) { .members-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } .member-card { padding: 1.5rem 1rem; } .member-avatar { width: 80px; height: 80px; font-size: 2.2rem; } }
+  </style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<div class="team-hero">
+  <div class="team-hero-icon">🌿</div>
+  <h1>認識<em>城市飛羽</em>團隊</h1>
+  <p>我們是一群來自宜蘭的生態志工，透過公民科學的力量，守護每一隻在城市中飛翔的鳥類。</p>
+  <div class="team-hero-badge">荒野宜蘭親子團一團 — 城市飛羽</div>
+</div>
+
+<div class="page-wrap">
+  <p class="section-tag">關於我們</p>
+  <h2 class="section-title">我們是誰？</h2>
+  <div class="team-intro">
+    <p>城市飛羽是荒野保護協會宜蘭親子團一團的生態行動小組，由一群熱愛鳥類與自然的家庭共同組成。我們相信，城市中的每一個孩子都有機會成為生態守護者。</p>
+    <p>鳥窗殺是台灣城市中嚴重卻被忽視的生態問題。我們透過建立這個公民科學資料庫，系統性地記錄宜蘭地區的鳥窗殺事件，希望藉由資料的力量，推動建築友善鳥類的政策改變。</p>
+    <p>每一筆通報資料，都是我們向城市的鳥兒們說：「我們看見你了。」</p>
+  </div>
+
+  <p class="section-tag">團隊成員</p>
+  <h2 class="section-title">城市飛羽夥伴們</h2>
+  <div class="members-grid">
+    <div class="member-card"><div class="member-avatar">🫎</div><div class="member-role"><!-- 職責 --></div><div class="member-name">Moose</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🐆</div><div class="member-role"><!-- 職責 --></div><div class="member-name">山豹</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🏞️</div><div class="member-role"><!-- 職責 --></div><div class="member-name">溪流</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🐸</div><div class="member-role"><!-- 職責 --></div><div class="member-name">小雨蛙</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🍈</div><div class="member-role"><!-- 職責 --></div><div class="member-name">小荔枝</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🦢</div><div class="member-role"><!-- 職責 --></div><div class="member-name">小白鷺</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🐋</div><div class="member-role"><!-- 職責 --></div><div class="member-name">虎鯨</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🐰</div><div class="member-role"><!-- 職責 --></div><div class="member-name">小兔子</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+    <div class="member-card"><div class="member-avatar">🦭</div><div class="member-role"><!-- 職責 --></div><div class="member-name">小海豹</div><div class="member-bio"><!-- 個人簡介 --></div></div>
+  </div>
+
+  <div class="contact-section">
+    <h2>與我們聯繫</h2>
+    <p>有任何關於鳥窗殺的問題、想法或合作邀請<br/>歡迎透過以下方式與城市飛羽團隊聯繫</p>
+    <div class="contact-links">
+      <a href="mailto:citybirds@example.com" class="contact-btn contact-btn-email">✉️ 寄送 Email</a>
+      <a href="https://facebook.com/你的粉絲頁" target="_blank" class="contact-btn contact-btn-fb">📘 Facebook</a>
+      <a href="https://instagram.com/你的帳號" target="_blank" class="contact-btn contact-btn-ig">📷 Instagram</a>
+    </div>
+  </div>
+</div>
+
+<div id="footerMount"></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/shared.js"></script>
+<script>
+  document.getElementById('sharedStyle').textContent = sharedCSS;
+  renderNav('team.html');
+  renderFooter();
+</script>
+</body>
+</html>
