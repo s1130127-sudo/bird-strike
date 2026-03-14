@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>城市飛羽 · 鳥窗殺防治資料庫</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style id="sharedStyle"></style>
+  <style>
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, var(--night) 0%, var(--dusk) 55%, #3a6b8a 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 6rem 2rem 4rem; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 20% 50%, rgba(240,160,90,0.12) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(61,122,94,0.15) 0%, transparent 50%);
+    }
+    .hero-bird { font-size: 5rem; margin-bottom: 1.5rem; animation: float 4s ease-in-out infinite; filter: drop-shadow(0 0 30px rgba(240,160,90,0.4)); position: relative; }
+    @keyframes float { 0%,100%{ transform: translateY(0) rotate(-3deg); } 50%{ transform: translateY(-18px) rotate(3deg); } }
+    .hero h1 { font-family: 'Noto Serif TC', serif; font-size: clamp(2.2rem,6vw,4rem); font-weight: 700; color: #fff; line-height: 1.35; margin-bottom: 1rem; position: relative; }
+    .hero h1 em { color: var(--dawn); font-style: normal; }
+    .hero-sub { font-size: 1rem; color: rgba(255,255,255,0.7); max-width: 540px; line-height: 1.9; margin-bottom: 2rem; position: relative; }
+    .hero-team { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; margin-bottom: 2.5rem; position: relative; }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
+    .btn { padding: 0.85rem 2rem; border-radius: 50px; font-size: 0.92rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.25s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'Noto Sans TC', sans-serif; }
+    .btn-primary { background: var(--dawn); color: var(--night); box-shadow: 0 4px 20px rgba(240,160,90,0.35); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,160,90,0.5); }
+    .btn-outline { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.4); }
+    .btn-outline:hover { background: rgba(255,255,255,0.1); }
+    .scroll-hint { position: absolute; bottom: 2rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; color: rgba(255,255,255,0.3); font-size: 0.72rem; }
+    .scroll-arrow { animation: bounce 2s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+    .stats-bar { background: var(--dusk); padding: 2.5rem 2rem; display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap; }
+    .stat-item { text-align: center; }
+    .stat-num { font-family: 'Space Mono', monospace; font-size: 2.2rem; font-weight: 700; color: var(--dawn); display: block; }
+    .stat-label { font-size: 0.78rem; color: rgba(255,255,255,0.55); letter-spacing: 0.05em; }
+    .quick-links { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .quick-card { background: #fff; border-radius: 16px; padding: 2rem; border: 1px solid rgba(44,74,110,0.08); box-shadow: 0 2px 16px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; display: block; }
+    .quick-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+    .quick-card-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .quick-card h3 { font-family: 'Noto Serif TC', serif; font-size: 1.02rem; color: var(--dusk); margin-bottom: 0.5rem; }
+    .quick-card p { font-size: 0.85rem; color: #888; line-height: 1.7; }
+  </style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<section class="hero">
+  <div class="hero-bird">🦅</div>
+  <h1>每一扇窗<br/>都可能是<em>最後的飛翔</em></h1>
+  <p class="hero-sub">鳥類撞玻璃是城市中被嚴重忽視的生態威脅。透過系統性的資料收集，我們攜手守護每一隻天空的生命。</p>
+  <div class="hero-team">荒野宜蘭親子團一團 — 城市飛羽</div>
+  <div class="hero-cta">
+    <a href="report.html" class="btn btn-primary">📸 通報窗殺事件</a>
+    <a href="database.html" class="btn btn-outline">📊 查看資料庫</a>
+  </div>
+  <div class="scroll-hint"><span>向下探索</span><span class="scroll-arrow">↓</span></div>
+</section>
+
+<div class="stats-bar">
+  <div class="stat-item"><span class="stat-num" id="stat-total">—</span><span class="stat-label">累計通報件數</span></div>
+  <div class="stat-item"><span class="stat-num" id="stat-species">—</span><span class="stat-label">記錄鳥種數</span></div>
+  <div class="stat-item"><span class="stat-num" id="stat-locations">—</span><span class="stat-label">事發地點數</span></div>
+  <div class="stat-item"><span class="stat-num">10億+</span><span class="stat-label">全球年估計死亡（隻）</span></div>
+</div>
+
+<div class="page-wrap">
+  <p class="section-tag">快速導覽</p>
+  <h2 class="section-title">選擇你要前往的功能</h2>
+  <div class="quick-links">
+    <a href="about.html" class="quick-card"><div class="quick-card-icon">🔍</div><h3>關於鳥窗殺</h3><p>了解鳥窗殺的成因、影響與預防方式</p></a>
+    <a href="report.html" class="quick-card"><div class="quick-card-icon">📸</div><h3>通報事件</h3><p>上傳照片、GPS定位、AI辨識鳥類</p></a>
+    <a href="database.html" class="quick-card"><div class="quick-card-icon">📊</div><h3>通報資料庫</h3><p>瀏覽、搜尋所有通報紀錄</p></a>
+    <a href="map.html" class="quick-card"><div class="quick-card-icon">🗺️</div><h3>事件地圖</h3><p>查看事件分佈熱點地圖</p></a>
+    <a href="team.html" class="quick-card"><div class="quick-card-icon">👥</div><h3>團隊介紹</h3><p>認識城市飛羽的夥伴們</p></a>
+  </div>
+</div>
+
+<div id="footerMount"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/shared.js"></script>
+<script>
+  document.getElementById('sharedStyle').textContent = sharedCSS;
+  renderNav('index.html');
+  renderFooter();
+
+  async function updateStats() {
+    const { count: total } = await sb.from('bird_strikes').select('*', { count:'exact', head:true });
+    const { data: sp } = await sb.from('bird_strikes').select('bird_species').not('bird_species','is',null);
+    const { data: lc } = await sb.from('bird_strikes').select('location').not('location','is',null);
+    animateNum('stat-total', total || 0);
+    animateNum('stat-species', new Set((sp||[]).map(r => r.bird_species)).size);
+    animateNum('stat-locations', new Set((lc||[]).map(r => r.location)).size);
+  }
+  function animateNum(id, target) {
+    const el = document.getElementById(id);
+    let cur = 0;
+    const step = Math.max(1, Math.floor(target / 40));
+    const t = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.textContent = cur.toLocaleString();
+      if (cur >= target) clearInterval(t);
+    }, 30);
+  }
+  updateStats();
+</script>
+</body>
+</html>
