@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>事件地圖 · 城市飛羽</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style id="sharedStyle"></style>
+  <style>
+    #leafletMap { width:100%; height:520px; border-radius:16px; margin-top:1.5rem; box-shadow:0 4px 20px rgba(0,0,0,0.1); z-index:1; }
+    .map-legend { margin-top:1rem; display:flex; gap:1.5rem; flex-wrap:wrap; font-size:0.85rem; color:#555; }
+    .no-data { text-align:center; padding:3rem; color:#aaa; background:#f5f9fc; border-radius:16px; margin-top:1.5rem; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+<div id="navMount"></div>
+<div class="page-wrap">
+  <p class="section-tag">空間分佈</p>
+  <h1 class="section-title">事件地圖</h1>
+  <p class="section-desc">整合各通報地點的地理資訊，找出鳥窗殺熱點，協助優先推動防治措施。通報時請記得點擊「自動抓取 GPS」，資料才會顯示在地圖上。</p>
+  <div id="leafletMap"></div>
+  <div class="map-legend">
+    <span>🔴 撞擊後死亡</span>
+    <span>🟠 撞擊後昏迷</span>
+    <span>🟡 撞擊後受傷飛離</span>
+    <span>🟢 撞擊後恢復飛離</span>
+    <span>⚪ 其他</span>
+  </div>
+</div>
+<div id="footerMount"></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/shared.js"></script>
+<script>
+  document.getElementById('sharedStyle').textContent = sharedCSS;
+  renderNav('map.html');
+  renderFooter();
+
+  const colorMap = {
+    '撞擊後死亡': '#e74c3c', '撞擊後昏迷': '#e67e22',
+    '撞擊後受傷飛離': '#f1c40f', '撞擊後恢復飛離': '#2ecc71',
+  };
+
+  async function initMap() {
+    const map = L.map('leafletMap').setView([24.7021, 121.7377], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    const { data, error } = await sb.from('bird_strikes')
+      .select('latitude, longitude, bird_species, strike_type, event_time, location')
+      .not('latitude', 'is', null).not('longitude', 'is', null);
+
+    if (error || !data || !data.length) {
+      document.getElementById('leafletMap').insertAdjacentHTML('afterend',
+        '<div class="no-data">🗺️ 尚無含GPS座標的通報資料<br/>通報時請點擊「自動抓取GPS」</div>');
+      return;
+    }
+
+    const bounds = [];
+    data.forEach(r => {
+      const color = colorMap[r.strike_type] || '#95a5a6';
+      const marker = L.circleMarker([r.latitude, r.longitude], {
+        radius: 10, fillColor: color, fillOpacity: 0.85, color: '#ffffff', weight: 2
+      }).addTo(map);
+      marker.bindPopup(`
+        <div style="font-family:'Noto Sans TC',sans-serif;min-width:180px;line-height:1.8">
+          <div style="font-size:1rem;font-weight:700;color:#2c4a6e;margin-bottom:0.4rem">🐦 ${r.bird_species||'未知鳥種'}</div>
+          <div style="font-size:0.82rem;color:#555">
+            <div>📍 ${r.location||'未填寫'}</div>
+            <div>⚠️ ${r.strike_type||'未填寫'}</div>
+            <div>🕐 ${r.event_time ? r.event_time.slice(0,16).replace('T',' ') : '未填寫'}</div>
+          </div>
+        </div>`);
+      bounds.push([r.latitude, r.longitude]);
+    });
+    if (bounds.length > 0) map.fitBounds(bounds, { padding: [40, 40] });
+  }
+
+  initMap();
+</script>
+</body>
+</html>
