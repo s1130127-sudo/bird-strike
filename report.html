@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>通報事件 · 城市飛羽</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style id="sharedStyle"></style>
+  <style>
+    .form-card { background: #fff; border-radius: 24px; padding: 3rem; margin-top: 2rem; box-shadow: 0 4px 40px rgba(44,74,110,0.1); border: 1px solid rgba(44,74,110,0.08); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.85rem; font-weight: 500; color: var(--dusk); }
+    label .req { color: var(--danger); }
+    input, select, textarea { padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid #dde5ec; font-family: 'Noto Sans TC', sans-serif; font-size: 0.9rem; color: var(--ink); background: #fafcfe; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--mist); box-shadow: 0 0 0 3px rgba(138,180,196,0.2); }
+    textarea { resize: vertical; min-height: 100px; }
+    .photo-upload { border: 2px dashed #ccd8e3; border-radius: 12px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #f7fafc; position: relative; }
+    .photo-upload:hover { border-color: var(--mist); background: #eef5f9; }
+    .photo-upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; border: none; background: none; padding: 0; width: 100%; height: 100%; }
+    .photo-upload-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .photo-upload p { font-size: 0.87rem; color: #888; }
+    .photo-upload strong { color: var(--dusk); }
+    #preview-container { margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill,minmax(100px,1fr)); gap: 0.75rem; }
+    #preview-container img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #dde5ec; }
+    .photo-tips { background: linear-gradient(135deg,#fff8ec,#fef3e2); border: 1px solid #f5d89a; border-radius: 12px; padding: 1.25rem 1.5rem; margin-top: 1rem; font-size: 0.85rem; }
+    .photo-tips .tip-title { font-weight: 600; color: #b07a1a; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .photo-tips ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; color: #7a5c1a; line-height: 1.7; padding: 0; }
+    .gps-row { display: flex; gap: 1rem; align-items: flex-end; }
+    .gps-row input { flex: 1; }
+    .ai-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .method-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+    .ai-loading { display: none; align-items: center; gap: 0.6rem; color: var(--mist); font-size: 0.85rem; margin-top: 0.4rem; }
+    .ai-loading.show { display: flex; }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--mist); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-result { background: linear-gradient(135deg,#eaf5ee,#e8f4f8); border: 1px solid #b8dcc8; border-radius: 10px; padding: 0.85rem 1.1rem; font-size: 0.87rem; display: none; margin-top: 0.4rem; }
+    .ai-result.show { display: block; }
+    .manual-features { display: none; margin-top: 1rem; background: #f5f9fc; border: 1.5px solid #ccd8e3; border-radius: 12px; padding: 1.25rem 1.5rem; }
+    .manual-features.show { display: block; }
+    .manual-features-title { font-size: 0.87rem; font-weight: 600; color: var(--dusk); margin-bottom: 1rem; }
+    .form-submit { margin-top: 2rem; text-align: center; }
+    .btn-submit { padding: 1rem 3rem; background: var(--dusk); color: #fff; border: none; border-radius: 50px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.25s; font-family: 'Noto Sans TC', sans-serif; box-shadow: 0 4px 20px rgba(44,74,110,0.25); }
+    .btn-submit:hover { background: var(--night); transform: translateY(-2px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } .form-card { padding: 1.5rem; } .gps-row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+<div id="navMount"></div>
+<div class="page-wrap">
+  <p class="section-tag">公民科學通報</p>
+  <h1 class="section-title">通報鳥窗殺事件</h1>
+  <p class="section-desc">發現鳥類撞窗事件？請填寫以下表單，您的紀錄將成為保護鳥類的重要資料。</p>
+  <div class="form-card">
+    <form id="reportForm" novalidate>
+      <div class="form-group full" style="margin-bottom:1.5rem">
+        <label>事件照片</label>
+        <div class="photo-upload">
+          <input type="file" id="photoInput" accept="image/*" multiple />
+          <div class="photo-upload-icon">📷</div>
+          <p><strong>點擊上傳</strong>或拖曳照片至此</p>
+          <p style="margin-top:0.3rem">支援 JPG、PNG、HEIC，可多張（建議上傳多角度照片）</p>
+        </div>
+        <div id="preview-container"></div>
+        <div class="photo-tips">
+          <div class="tip-title">📸 拍照小提醒，幫助 AI 辨識</div>
+          <ul>
+            <li>🔍 盡量靠近拍攝，讓鳥佔畫面 1/3 以上</li>
+            <li>🪶 拍攝嘴喙、腳爪、翅膀花紋等特寫</li>
+            <li>📐 多角度拍攝，包含背面與側面</li>
+            <li>💡 避免逆光，讓羽毛顏色清晰可見</li>
+            <li>📏 可放置手或硬幣在旁邊，作為體型參照</li>
+          </ul>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>事發位置 <span class="req">*</span></label>
+          <div class="gps-row">
+            <input type="text" id="location" placeholder="地址或地點描述（如：宜蘭市○○路○號）" required />
+            <button type="button" class="btn-sm btn-green" onclick="getGPS()">📍 自動抓取 GPS</button>
+          </div>
+          <input type="hidden" id="lat" />
+          <input type="hidden" id="lng" />
+          <small id="gpsStatus" style="color:var(--mist);font-size:0.78rem;margin-top:0.3rem;display:block"></small>
+        </div>
+        <div class="form-group">
+          <label>事件時間 <span class="req">*</span></label>
+          <input type="datetime-local" id="eventTime" required />
+        </div>
+        <div class="form-group">
+          <label>窗殺類型 <span class="req">*</span></label>
+          <select id="strikeType" required>
+            <option value="">請選擇</option>
+            <option>撞擊後死亡</option><option>撞擊後昏迷</option>
+            <option>撞擊後受傷飛離</option><option>撞擊後恢復飛離</option>
+            <option>僅發現羽毛／痕跡</option><option>其他</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>鳥類名稱 <span class="req">*</span></label>
+          <div class="ai-row">
+            <span class="method-badge" id="methodBadge" style="background:#eaf5ee;color:var(--leaf)">🤖 AI辨識</span>
+            <button type="button" class="btn-sm btn-blue" onclick="triggerAI()">使用 AI 辨識（多張）</button>
+            <span style="font-size:0.8rem;color:#bbb">或</span>
+            <button type="button" class="btn-sm btn-gray" onclick="switchManual()">手動輸入</button>
+          </div>
+          <div class="ai-loading" id="aiLoading">
+            <div class="spinner"></div>
+            <span id="aiCountdown">AI 辨識中，剩餘 15 秒...</span>
+          </div>
+          <div class="ai-result" id="aiResult"></div>
+          <input type="text" id="birdSpecies" placeholder="鳥類中文或英文名稱" required style="margin-top:0.5rem" />
+          <input type="hidden" id="identMethod" value="AI" />
+          <div class="manual-features" id="manualFeatures">
+            <div class="manual-features-title">🔍 AI 無法辨識，請描述外觀特徵協助人工比對：</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>主要顏色</label>
+                <select id="birdColor">
+                  <option value="">請選擇</option>
+                  <option>黑色為主</option><option>白色為主</option><option>褐色為主</option>
+                  <option>灰色為主</option><option>綠色為主</option><option>多色混合</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>體型大小</label>
+                <select id="birdSize">
+                  <option value="">請選擇</option>
+                  <option>麻雀大小（小）</option><option>鴿子大小（中）</option>
+                  <option>烏鴉大小（大）</option><option>比烏鴉更大（超大）</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>嘴喙形狀</label>
+                <select id="birdBeak">
+                  <option value="">請選擇</option>
+                  <option>短而粗（雀類）</option><option>細而長（鷸類）</option>
+                  <option>勾狀（猛禽）</option><option>扁平（鴨類）</option><option>尖細（繡眼）</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>特殊花紋</label>
+                <select id="birdPattern">
+                  <option value="">請選擇</option>
+                  <option>無明顯花紋</option><option>有條紋</option><option>有斑點</option>
+                  <option>翅膀有色塊</option><option>頭部有色帽</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>建築物類型</label>
+          <select id="buildingType">
+            <option value="">請選擇</option>
+            <option>住宅</option><option>辦公大樓</option><option>學校</option>
+            <option>商場</option><option>公共建設</option><option>其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>玻璃特性</label>
+          <select id="glassType">
+            <option value="">請選擇</option>
+            <option>透明玻璃</option><option>反光玻璃</option><option>磨砂玻璃</option>
+            <option>有防撞貼紙</option><option>不明</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>當時天氣</label>
+          <select id="weather">
+            <option value="">請選擇</option>
+            <option>晴天</option><option>多雲</option><option>陰天</option>
+            <option>雨天</option><option>霧</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>通報者（選填）</label>
+          <input type="text" id="reporter" placeholder="您的姓名或匿名" />
+        </div>
+        <div class="form-group full">
+          <label>其他備註</label>
+          <textarea id="notes" placeholder="其他觀察細節、現場狀況等..."></textarea>
+        </div>
+      </div>
+      <div class="form-submit">
+        <button type="submit" class="btn-submit" id="submitBtn">🕊️ 提交通報</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="footerMount"></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/shared.js"></script>
+<script>
+  document.getElementById('sharedStyle').textContent = sharedCSS;
+  renderNav('report.html');
+  renderFooter();
+
+  document.getElementById('eventTime').value =
+    new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+  function getGPS() {
+    const status = document.getElementById('gpsStatus');
+    if (!navigator.geolocation) { status.textContent = '此裝置不支援GPS'; return; }
+    status.textContent = '⏳ 定位中...';
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        document.getElementById('lat').value = lat.toFixed(6);
+        document.getElementById('lng').value = lng.toFixed(6);
+        if (!document.getElementById('location').value)
+          document.getElementById('location').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        status.textContent = `✅ GPS 已取得：${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      },
+      err => { status.textContent = '⚠️ 定位失敗：' + err.message; }
+    );
+  }
+
+  document.getElementById('photoInput').addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    const container = document.getElementById('preview-container');
+    container.innerHTML = '';
+    files.forEach(f => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      container.appendChild(img);
+    });
+  });
+
+  let aiController = null;
+
+  async function triggerAI() {
+    const files = document.getElementById('photoInput').files;
+    if (!files.length) { showToast('請先上傳照片再使用 AI 辨識', 'error'); return; }
+    const loading = document.getElementById('aiLoading');
+    const result  = document.getElementById('aiResult');
+    result.classList.remove('show');
+    document.getElementById('manualFeatures').classList.remove('show');
+    loading.classList.add('show');
+    loading.innerHTML = '<div class="spinner"></div> <span id="aiCountdown">AI 辨識中，剩餘 15 秒...</span>';
+    setMethod('AI');
+    let remaining = 15;
+    const countdownEl = () => document.getElementById('aiCountdown');
+    const countdownTimer = setInterval(() => {
+      remaining--;
+      if (countdownEl()) countdownEl().textContent = `AI 辨識中，剩餘 ${remaining} 秒...`;
+    }, 1000);
+    aiController = new AbortController();
+    let isTimeout = false;
+    const timeout = setTimeout(() => {
+      isTimeout = true; aiController.abort(); clearInterval(countdownTimer);
+      loading.classList.remove('show');
+      result.innerHTML = `⚠️ <strong>AI 辨識逾時</strong><br/><small style="color:#888">建議壓縮照片後再試，或直接手動輸入。</small>`;
+      result.style.color = '#e67e22'; result.classList.add('show'); setMethod('手動');
+      document.getElementById('manualFeatures').classList.add('show');
+    }, 15000);
+    try {
+      const images = [];
+      for (const file of Array.from(files).slice(0, 4)) {
+        if (file.size > 10 * 1024 * 1024) continue;
+        const b64 = await toBase64(file);
+        images.push({ imageBase64: b64, mimeType: file.type || 'image/jpeg' });
+      }
+      if (!images.length) {
+        clearTimeout(timeout); clearInterval(countdownTimer); loading.classList.remove('show');
+        result.innerHTML = `⚠️ <strong>照片檔案過大（超過10MB）</strong>`;
+        result.style.color = '#e67e22'; result.classList.add('show'); setMethod('手動');
+        document.getElementById('manualFeatures').classList.add('show'); return;
+      }
+      const res = await fetch('/api/identify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images }), signal: aiController.signal
+      });
+      clearTimeout(timeout); clearInterval(countdownTimer); loading.classList.remove('show');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        result.innerHTML = `❌ <strong>AI 辨識失敗</strong><br/><small style="color:#888">${errData?.error?.message || 'HTTP ' + res.status}</small>`;
+        result.style.color = 'var(--danger)'; result.classList.add('show'); setMethod('手動');
+        document.getElementById('manualFeatures').classList.add('show'); return;
+      }
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '無法辨識';
+      if (text === '無法辨識') {
+        result.innerHTML = `🤖 <strong>AI 無法辨識</strong><br/><small style="color:#888">請填寫下方外觀特徵，協助人工比對。</small>`;
+        result.style.color = '#888'; result.classList.add('show'); setMethod('手動');
+        document.getElementById('manualFeatures').classList.add('show');
+      } else {
+        document.getElementById('birdSpecies').value = text;
+        result.innerHTML = `✅ <strong>AI 辨識成功：${text}</strong><br/><small style="color:#888">若有誤可直接修改。</small>`;
+        result.style.color = 'var(--leaf)'; result.classList.add('show');
+        document.getElementById('manualFeatures').classList.remove('show');
+      }
+    } catch (err) {
+      clearTimeout(timeout); clearInterval(countdownTimer); loading.classList.remove('show');
+      if (err.name === 'AbortError' && isTimeout) return;
+      result.innerHTML = `❌ <strong>AI 辨識錯誤</strong><br/><small style="color:#888">${err.message}</small>`;
+      result.style.color = 'var(--danger)'; result.classList.add('show'); setMethod('手動');
+      document.getElementById('manualFeatures').classList.add('show');
+    }
+  }
+
+  function switchManual() {
+    setMethod('手動');
+    document.getElementById('aiResult').classList.remove('show');
+    document.getElementById('manualFeatures').classList.add('show');
+    document.getElementById('birdSpecies').focus();
+  }
+
+  function setMethod(mode) {
+    document.getElementById('identMethod').value = mode;
+    const b = document.getElementById('methodBadge');
+    if (mode === 'AI') { b.textContent = '🤖 AI辨識'; b.style.background = '#eaf5ee'; b.style.color = 'var(--leaf)'; }
+    else               { b.textContent = '✏️ 手動輸入'; b.style.background = '#f0eaff'; b.style.color = '#6b4fa0'; }
+  }
+
+  function toBase64(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById('reportForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = '提交中...';
+    try {
+      const files = Array.from(document.getElementById('photoInput').files);
+      const photoUrls = [];
+      for (const file of files) {
+        const path = `strikes/${Date.now()}_${file.name.replace(/\s/g,'_')}`;
+        const { error } = await sb.storage.from('bird-photos').upload(path, file);
+        if (!error) { const { data } = sb.storage.from('bird-photos').getPublicUrl(path); photoUrls.push(data.publicUrl); }
+      }
+      const featureNotes = [
+        document.getElementById('birdColor').value,
+        document.getElementById('birdSize').value,
+        document.getElementById('birdBeak').value,
+        document.getElementById('birdPattern').value,
+      ].filter(Boolean).join('、');
+      const notesValue = document.getElementById('notes').value;
+      const combinedNotes = featureNotes ? `${notesValue ? notesValue + '\n' : ''}【外觀特徵】${featureNotes}` : notesValue;
+      const { error } = await sb.from('bird_strikes').insert([{
+        event_time: document.getElementById('eventTime').value,
+        location: document.getElementById('location').value,
+        latitude: parseFloat(document.getElementById('lat').value) || null,
+        longitude: parseFloat(document.getElementById('lng').value) || null,
+        strike_type: document.getElementById('strikeType').value,
+        bird_species: document.getElementById('birdSpecies').value,
+        ident_method: document.getElementById('identMethod').value,
+        building_type: document.getElementById('buildingType').value,
+        glass_type: document.getElementById('glassType').value,
+        weather: document.getElementById('weather').value,
+        reporter: document.getElementById('reporter').value,
+        notes: combinedNotes,
+        photos: photoUrls,
+      }]);
+      if (error) throw error;
+      showToast('✅ 通報成功！感謝您的貢獻', 'success');
+      document.getElementById('reportForm').reset();
+      document.getElementById('preview-container').innerHTML = '';
+      document.getElementById('aiResult').classList.remove('show');
+      document.getElementById('manualFeatures').classList.remove('show');
+      document.getElementById('eventTime').value =
+        new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    } catch (err) {
+      showToast('❌ 提交失敗：' + err.message, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = '🕊️ 提交通報';
+    }
+  });
+</script>
+</body>
+</html>
