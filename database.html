@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>通報資料庫 · 城市飛羽</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style id="sharedStyle"></style>
+  <style>
+    .data-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .data-controls input { flex: 1; min-width: 200px; padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid #dde5ec; font-family: 'Noto Sans TC', sans-serif; font-size: 0.9rem; outline: none; background: #fafcfe; }
+    .data-controls input:focus { border-color: var(--mist); box-shadow: 0 0 0 3px rgba(138,180,196,0.2); }
+    .data-controls select { padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid #dde5ec; font-family: 'Noto Sans TC', sans-serif; font-size: 0.9rem; outline: none; background: #fafcfe; max-width: 180px; }
+    .table-wrap { overflow-x: auto; border-radius: 16px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); border: 1px solid rgba(44,74,110,0.08); }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--dusk); }
+    thead th { padding: 1rem 1.25rem; text-align: left; font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.85); letter-spacing: 0.04em; }
+    tbody tr { border-bottom: 1px solid #eaecef; transition: background 0.15s; }
+    tbody tr:hover { background: #f5f9fc; }
+    tbody tr:last-child { border-bottom: none; }
+    td { padding: 0.9rem 1.25rem; font-size: 0.87rem; color: var(--ink); vertical-align: middle; }
+    .tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.73rem; background: #e8f4f8; color: var(--dusk); }
+    .tag.ai { background: #eaf5ee; color: var(--leaf); }
+  </style>
+</head>
+<body>
+<div id="navMount"></div>
+<div class="page-wrap">
+  <p class="section-tag">開放資料</p>
+  <h1 class="section-title">通報資料庫</h1>
+  <p class="section-desc">所有通報資料將在去除個人資訊後公開，供研究與教育使用。</p>
+  <div class="data-controls">
+    <input type="text" id="searchInput" placeholder="🔍 搜尋鳥種、地點..." oninput="filterTable()" />
+    <select id="filterType" onchange="filterTable()">
+      <option value="">全部類型</option>
+      <option>撞擊後死亡</option><option>撞擊後昏迷</option>
+      <option>撞擊後受傷飛離</option><option>撞擊後恢復飛離</option>
+    </select>
+    <button class="btn-sm btn-green" onclick="loadRecords()">🔄 重新載入</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>時間</th><th>鳥種</th><th>辨識方式</th><th>地點</th><th>類型</th><th>天氣</th></tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="7" style="text-align:center;padding:3rem;color:#bbb">載入中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div id="footerMount"></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/shared.js"></script>
+<script>
+  document.getElementById('sharedStyle').textContent = sharedCSS;
+  renderNav('database.html');
+  renderFooter();
+
+  let allRecords = [];
+
+  async function loadRecords() {
+    const { data, error } = await sb.from('bird_strikes').select('*')
+      .order('event_time', { ascending: false }).limit(200);
+    if (!error && data) { allRecords = data; renderTable(data); }
+    else document.getElementById('tableBody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:#bbb">尚無資料或無法連線</td></tr>';
+  }
+
+  function renderTable(records) {
+    const body = document.getElementById('tableBody');
+    if (!records.length) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#bbb">無符合條件的資料</td></tr>';
+      return;
+    }
+    body.innerHTML = records.map((r, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.event_time ? r.event_time.slice(0,16).replace('T',' ') : '—'}</td>
+        <td><strong>${r.bird_species||'—'}</strong></td>
+        <td><span class="tag ${r.ident_method==='AI'?'ai':''}">${r.ident_method||'—'}</span></td>
+        <td>${r.location||'—'}</td>
+        <td>${r.strike_type||'—'}</td>
+        <td>${r.weather||'—'}</td>
+      </tr>`).join('');
+  }
+
+  function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const t = document.getElementById('filterType').value;
+    renderTable(allRecords.filter(r =>
+      (!q || (r.bird_species||'').toLowerCase().includes(q) || (r.location||'').toLowerCase().includes(q)) &&
+      (!t || r.strike_type === t)
+    ));
+  }
+
+  loadRecords();
+</script>
+</body>
+</html>
